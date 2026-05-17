@@ -2,8 +2,11 @@ package com.vncrodrigues13.cv_easy_maded.experience;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +15,12 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 class ExperienceEntryTest {
+
+	@Test
+	void livesInExperiencePackage() {
+		assertThat(ExperienceEntry.class.getPackageName())
+			.isEqualTo("com.vncrodrigues13.cv_easy_maded.experience");
+	}
 
 	@Test
 	void isMongoDocumentWithSpringDataId() throws Exception {
@@ -36,6 +45,39 @@ class ExperienceEntryTest {
 		assertListOfStringField("tags");
 		assertListOfStringField("technologies");
 		assertMapOfStringToObjectField("details");
+	}
+
+	@Test
+	void roundTripsAllFieldsThroughAccessors() {
+		Instant occurredAt = Instant.parse("2024-01-15T10:00:00Z");
+		Instant createdAt = Instant.parse("2024-01-16T10:00:00Z");
+		Instant updatedAt = Instant.parse("2024-01-17T10:00:00Z");
+		Map<String, Object> details = Map.of("impact", "reduced review time");
+
+		ExperienceEntry entry = new ExperienceEntry();
+		entry.setId("entry-1");
+		entry.setUserId("default-user");
+		entry.setType(ExperienceType.PROJECT);
+		entry.setTitle("CV history API");
+		entry.setSummary("Built the first MVP backend");
+		entry.setTags(List.of("career", "backend"));
+		entry.setTechnologies(List.of("Java", "MongoDB"));
+		entry.setDetails(details);
+		entry.setOccurredAt(occurredAt);
+		entry.setCreatedAt(createdAt);
+		entry.setUpdatedAt(updatedAt);
+
+		assertThat(entry.getId()).isEqualTo("entry-1");
+		assertThat(entry.getUserId()).isEqualTo("default-user");
+		assertThat(entry.getType()).isEqualTo(ExperienceType.PROJECT);
+		assertThat(entry.getTitle()).isEqualTo("CV history API");
+		assertThat(entry.getSummary()).isEqualTo("Built the first MVP backend");
+		assertThat(entry.getTags()).containsExactly("career", "backend");
+		assertThat(entry.getTechnologies()).containsExactly("Java", "MongoDB");
+		assertThat(entry.getDetails()).containsExactlyEntriesOf(details);
+		assertThat(entry.getOccurredAt()).isEqualTo(occurredAt);
+		assertThat(entry.getCreatedAt()).isEqualTo(createdAt);
+		assertThat(entry.getUpdatedAt()).isEqualTo(updatedAt);
 	}
 
 	@Test
@@ -72,6 +114,34 @@ class ExperienceEntryTest {
 		assertThat(entry.getTags()).isEmpty();
 		assertThat(entry.getTechnologies()).isEmpty();
 		assertThat(entry.getDetails()).isEmpty();
+	}
+
+	@Test
+	void copiesCollectionsAndDetailsWhenSettingValues() {
+		List<String> tags = new ArrayList<>(List.of("career"));
+		List<String> technologies = new ArrayList<>(List.of("Java"));
+		Map<String, Object> details = new LinkedHashMap<>(Map.of("role", "backend"));
+
+		ExperienceEntry entry = new ExperienceEntry();
+		entry.setTags(tags);
+		entry.setTechnologies(technologies);
+		entry.setDetails(details);
+
+		tags.add("mutated");
+		technologies.add("mutated");
+		details.put("mutated", true);
+
+		assertThat(entry.getTags()).containsExactly("career");
+		assertThat(entry.getTechnologies()).containsExactly("Java");
+		assertThat(entry.getDetails()).containsExactly(Map.entry("role", "backend"));
+	}
+
+	@Test
+	void doesNotExposeAiQuestionnaireOrClientUserManagementFields() {
+		assertThat(List.of(ExperienceEntry.class.getDeclaredFields()).stream().map(Field::getName).toList())
+			.contains("userId")
+			.doesNotContain("username", "email", "owner", "tenantId", "prompt", "questions", "answers",
+					"enrichment", "provider", "model", "llm");
 	}
 
 	private static void assertListOfStringField(String fieldName) throws Exception {

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "workflow-coordinator",
+  "instructions": ["CLAUDE.md"],
+  "command": {
+    "sample-workflow": {
+      "description": "Runs the sample PM -> TL -> QA -> Dev workflow with human approval gates.",
+      "agent": "workflow-coordinator",
+      "template": "Use the workflow-coordinator agent. Follow this flow exactly: 1) ask the user for the feature idea if not already provided; 2) hand it to @planner-pm to write the feature spec, split it into small task specs, and define TODO lists; 3) present the result to the user and stop for human approval; 4) after approval, hand the approved spec to @tech-lead-tl to identify new technical requirements, dependency concerns, risks, and TODO ordering issues; 5) present the tech review to the user and stop for human approval before QA; 6) after approval, hand the approved context to @validator-qa to produce TDD scenarios, BDD scenarios, and coverage expectations; 7) present the QA plan to the user and stop for human approval before development; 8) after approval, hand the approved spec, tech notes, and QA plan to @dev; 9) @dev must implement only what is documented, must not assume missing behavior, and must ask the user about any ambiguity before coding. Keep the flow sequential and do not skip the approval gates."
+    }
+  }
+}

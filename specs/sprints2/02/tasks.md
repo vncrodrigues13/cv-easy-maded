@@ -19,3 +19,7 @@ Source features:
 - The document shape supports filtering by type, tag, and technology.
 - Flexible details can store entry-specific facts without schema changes.
 - No client-facing user-management or AI fields are added.
+
+## Open Questions
+
+- Should Sprint 02 define an actual default user constant now, or should it only ensure `userId` exists internally and leave default assignment to Sprint 03 service work?
